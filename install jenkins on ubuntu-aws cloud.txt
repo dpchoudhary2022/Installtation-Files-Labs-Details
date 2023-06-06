@@ -1,0 +1,41 @@
+
+insall jenkins on ubunt/AWS 
+
+firrst install java 
+
+sudo apt install default-jdk -y
+
+now -
+
+This is the Debian package repository of Jenkins to automate installation and upgrade. To use this repository, first add the key to your system:
+
+    
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
+    /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+
+Then add a Jenkins apt repository entry:
+
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+    https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+    /etc/apt/sources.list.d/jenkins.list > /dev/null
+  
+
+  sudo apt-get update
+ 
+  sudo apt-get install jenkins
+   
+
+
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
+sudo systemctl status jenkins
+
+to see password of jenkins- 
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+Now you will be able to access the Jenkins server on port 8080 using the IP address as shown below.
+
+http://public ip of ec2:8080  -->> it will open jenkins 
+
+NOTE-  ALWAYS CHECK THE THE OFFICIAL DOCS FOR INSTALLATION OF JENKINS ON JENKINS.IO SITE
