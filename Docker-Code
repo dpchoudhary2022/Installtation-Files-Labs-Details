@@ -1,0 +1,256 @@
+# docker version
+$ docker version or docker -v
+
+# it shows all about docker such as- images,container etc
+$ docker info
+
+# 
+$ docker --help
+# example- docker images --help
+
+# shows all images default, hide both
+$ docker images -a 
+
+# shows only numeric id of images
+$ docker images -q 
+
+# for images
+$ docker images
+$ docker image ls     // this command also work
+
+# pull the images from docker hub
+$ docker pull
+# example- docker pull hello-world
+
+# to remove images
+$ docker rmi
+# example- docker rmi hello-world
+
+# forcefully remove images
+$ docker rmi -f 
+$ docker rmi --force
+# example- docker rmi -f hello-world
+# example- docker rmi --force hello-world
+
+# show running container
+$ docker ps 
+$ docker container ls     // this command also work 
+
+# to see all container
+$ docker ps -a
+
+
+# to create conatiner & give name to container
+$ docker run -it --name mycontainer1 centos /bin/bash 
+# hint1: here name of container= mycontainer1
+# hint2: -it -->> i = intractive mode and t = terminal
+# hint3: centos is image which we want to pull from dockerhub
+# hint4: we are under container now
+# hint6: to come out from container use : exit
+# hint6:after using exit command , container will be stopped
+
+# to check service is start or not
+$ service docker status
+
+# to start container 
+$ docker start mycontainer1 //(container name)
+
+# to go inside container
+$ docker attach mycontainer1 // (container name )
+
+# to stop container 
+$ docker stop mycontainer1 // (container name)
+
+# to delete container
+$ docker rm mycontainer1 // (container name )
+
+#
+$ docker system df
+
+# show network 
+$
+$ docker network ls  // this command also work
+
+###########################################################
+
+# docker commit : how to used 
+# docker commit used to create new images 
+
+# pull centos image and create mycontainer1
+$ docker run -it --name mycontainer1 centos 
+
+# now we are under mycontainer1
+# here create some file under /tmp dir.
+
+$ ls
+$ cd /tmp
+$ touch file1 file2 file3
+$ exit 
+
+# show changes in parent dir.
+$ docker diff mycontainer1 
+
+# o/p-->>root@dp-Latitude-3520:/home/dp#
+C /root
+A /root/.bash_history
+C /tmp                           here c= changes 
+A /tmp/file2                          a = addition
+A /tmp/file3
+A /tmp/file1
+
+# to create image of this conatiner(mycontainer1) by docker commit command
+$ docker commit mycontainer1 updateimage1
+$ docker images
+
+# now create new container(dpcontainer1) from this (updateimage1) image
+$ docker run -it --name dpcontainer1 updateimage1
+
+# now we are under dpcontainer1
+$ ls
+$ cd /tmp
+$ ls
+
+# o/p-->> here : file file2 file3 showing
+
+#########################################################################################################
+
+SUMMARRY: we are pull centos image and create mycontainer1
+          and create some files in mycontainer1 under /tmp dir.
+          after that create new image (updateimage1) of this container by docker commit command 
+          send this image to docker hub
+          other one pull this image (updateimage1)
+          now he can create container(dpcontainer1) from this image (updateimage1)
+          now we are under dpcontainere1
+          here under /tmp dir. all files/software will show: file1 file2 file3 
+          this means the other person access all the file/software which we created already
+
+#########################################################################################################
+
+###########.......cretae a Dockerfile...........###############
+###########.......cretae a Dockerfile...........###############
+
+# Dockerfile is basically a text file contains some set of instructions.
+# Automation of docker image creation
+
+####.....Docker Components....######
+
+# FROM:- for base image this command mustbe on top of the dockerfile
+
+# RUN:- to execute commands,it will create a layer in image
+
+# MAINTAINER:- Auther/Owner/Description
+
+# COPY:- copy file from local system(we need to provide source/destination)
+
+# ADD:- similar to copy but it provides a feature to download files from internet, also we extract files at docker image side
+
+# EXPOSE:- to expose portssuchas port 8080 for tomcat and port 80 for nginx etc.
+
+# WORKDIR:- to set working directory for a container
+
+# CMD:- execute commands but during container creation
+
+# ENTRYPOINT:- similar to cmd but has higher priority over cmd , firs commands  will be executed by ENTRYPOINT only.
+
+# ENV:- environment variables
+------------------------------------------------------------------
+
+# STEPS TO CREATE Dockerfile -
+
+# 1-create a file named Dockerfile (D is capital)
+
+#   vi Dockerfile 
+ 
+#2- add instruction in Dockerfile
+#3- build dockerfile to create image
+#4-run Dockerfile to create container
+
+#############......example of Dockerfile...........-####################
+#1&2 
+#          vi Dockerfile  
+
+     FROM ubuntu
+     RUN  echo "this is my sample Dockerfile for testing" > /tmp/testfile
+     
+     
+# save & exit the editor      
+
+#############################################################################
+
+
+#3 now build a dockerfile
+
+$ docker build -t myimage1 .           // here 't' is tag  //and myimage1 is tag name // and dot (.) is current working directory
+
+-------------------------------------------------------------------------------------
+# o/p-->> root@dp-Latitude-3520:/home/dp# docker build -t myimage1 .
+Sending build context to Docker daemon  9.141GB
+Step 1/2 : FROM centos
+ ---> 5d0da3dc9764
+Step 2/2 : RUN  echo "this is my sample dockerfile for testing" > /tmp/testfile
+ ---> Running in 7fc7841996e4
+Removing intermediate container 7fc7841996e4
+ ---> 8e0fbe9e4411
+Successfully built 8e0fbe9e4411
+Successfully tagged myimage1:latest
+----------------------------------------------------------------------------------------
+
+$ docker images
+
+# now create container from this image(myimage1)
+
+$ docker run -it --name mycontainer myimage1 /bin/bash
+
+# now we are under container
+
+$ ls
+$ cd tmp/
+$ cat testfile
+
+# o/p-->> this is my sample dockerfile for testing
+
+$ exit // to comeout from container
+
+----------------------------------------------------------------------------------
+#########...........Dockerfile Example-2...........########################
+
+
+#  vi Dockerfile 
+
+   # THIS IS SAMPLE IMAGE
+   # THIS IS COMMENT 
+   
+   FROM        ubuntu
+   MAINTINER   dpchoudhary2025@gmail.com
+   RUN         apt-get update
+   RUN         apt-get install nginx -y
+   CMD         ["echo" ,"Image Created"]
+
+
+# save & exit the editor
+
+# now build dockerfile
+$ docker build -t myimage:0.1 .    // tag name= myimage:0.1  
+
+# now login into docker 
+$ docker login 
+# docker user name & password enter 
+
+$ docker tag myimage:0.1 dpchoudhary2025/demo-repo1:latest
+
+$ docker push dpchoudhary2025/demo-repo1:latest
+
+
+###########################################################
+
+
+###################################################################
+
+
+
+
+
+
+
+
+
