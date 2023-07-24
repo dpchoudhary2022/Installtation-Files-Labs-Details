@@ -1,0 +1,113 @@
+###############.............docker networking........................########################
+###############.............docker networking........................########################
+
+
+There are different types of docker network drivers for different purposes. Following is the list of docker network drivers with use cases.
+
+1-bridge: used to enable communication between docker containers on the same host internally.
+2-host: uses host system ports for communication.
+3-null: disables communication between docker containers.
+4-overlay: used to enable communication between docker containers on different hosts (swarm nodes).
+5-macvlan: this allows containers to grab a unique IP address from the physical LAN network with DHCP.
+
+----------------------------------------------------------------------------
+
+Advantages of Docker Networking
+Some of the major benefits of using Docker Networking are:
+
+They share a single operating system and maintain containers in an isolated environment.
+It requires fewer OS instances to run the workload.
+It helps in the fast delivery of software.
+It helps in application portability.
+
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+
+# to see all network 
+$ docker network ls 
+
+# o/p-->> 
+
+..............................................................
+root@dp-Latitude-3520:/home/dp# docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+927fd6aeb77d   bridge    bridge    local
+0d072856fb1b   host      host      local
+de222cb9d3dc   none      null      local
+..............................................................
+
+# create a bridge n/w
+# n/w name= isoleted : this is bridge n/w
+$ docker network create --driver bridge isolated
+$ docker network ls
+
+# o/p-->>
+
+.................................................................
+root@dp-Latitude-3520:/home/dp# docker network ls
+NETWORK ID     NAME       DRIVER    SCOPE
+927fd6aeb77d   bridge     bridge    local
+0d072856fb1b   host       host      local
+1e3af23f9f7c   isolated   bridge    local   <<-------
+de222cb9d3dc   none       null      local
+...................................................................
+
+
+# to delete a specific n/w by network id or by network name
+# here we delete isolated/bridge n/w
+$ docker network rm 1e3af23f9f7c
+
+
+# create a network and attach with container & expose as well
+
+# first create network // nw name= mynetwork1
+
+$ docker network create --driver bridge mynetwork1
+$ docker network ls
+
+$ docker run -itd --network mynetwork1 --name container1 -p 80:80 ubuntu
+
+$  docker ps
+
+$ docker network inspect mynetwork1
+
+# create one more container as : container2 with nginx image
+$ docker run -itd --name container2 nginx
+$ docker ps 
+
+#o/p-->>
+
+----------------------------------------------------------------------
+root@dp-Latitude-3520:/home/dp# docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS                               NAMES
+b64baab0fec0   nginx     "/docker-entrypoint.…"   13 seconds ago   Up 12 seconds   80/tcp                              container2
+c522c757f00d   ubuntu    "/bin/bash"              25 minutes ago   Up 25 minutes   0.0.0.0:80->80/tcp, :::80->80/tcp   container1
+
+-----------------------------------------------------------------
+
+# now connect container2 with mynetwork1
+$ docker network connect [network-name] [container-name] //syntex
+$ docker network connect mynetwork1 container2
+
+$ docker container inspect container2
+
+# disconnect the container from network
+$ docker network disconnect [network-name] [container-name] //syntex
+
+$ docker network disconnect mynetwork1 container2
+
+$ docker container inspect container2
+
+# to remove network
+$ docker network rm [network-name]
+$ docker network rm mynetwork1
+
+########################################################################################
+
+
+
+
+
+
+
