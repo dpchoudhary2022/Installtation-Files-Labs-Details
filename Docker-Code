@@ -230,23 +230,405 @@ $ exit // to comeout from container
 # save & exit the editor
 
 # now build dockerfile
-$ docker build -t myimage:0.1 .    // tag name= myimage:0.1  
+$ docker build -t myimage:0.1 .    // tag name= myimage:0.1  // dot is current working dir.
 
 # now login into docker 
 $ docker login 
-# docker user name & password enter 
+# docker user name & password enter or use token for authentication
 
-$ docker tag myimage:0.1 dpchoudhary2025/demo-repo1:latest
+# now tag the image 
+$ docker tag myimage:0.1 dpchoudhary2025/demo-repo1:v1
 
-$ docker push dpchoudhary2025/demo-repo1:latest
+$ docker push dpchoudhary2025/demo-repo1:v1
 
 
 ###########################################################
 
+###########.......example of dockerfile.......#############
+   
+# example of Dockerfile
+
+FROM alpine:3.4
+
+RUN apk update
+RUN apk add vim
+RUN apk add curl
+               
 
 ###################################################################
 
+$ docker build -t myimg .
 
+$ docker login -u dpchoudhary2025                     // docker login
+
+# enter docker token 
+
+$ docker tag myimg dpchoudhary2025/demo-repo2:v1      // no need to create repo by dockerhub UI // it will create from here as: demo-repo2
+
+$ docker push dpchoudhary2025/demo-repo2:v1   
+
+$ docker images
+
+---------------------------------------------------------
+# o/p-->> 
+
+
+root@dp-Latitude-3520:/home/dp# docker images
+REPOSITORY                   TAG       IMAGE ID       CREATED         SIZE
+dpchoudhary2025/demo-repo2   v1        62d0ebae5aca   5 minutes ago   32.2MB  // <<-----------
+myimg                        latest    62d0ebae5aca   5 minutes ago   32.2MB
+dpchoudhary2025/demo-repo1   latest    2d4c66a10710   22 hours ago    175MB
+myimage                      0.1       2d4c66a10710   22 hours ago    175MB
+ubuntu                       latest    5a81c4b8502e   3 weeks ago     77.8MB
+alpine                       3.4       b7c5ffe56db7   4 years ago     4.82MB
+
+------------------------------------------------------------------------------------------------
+
+##########################........docker volume...........#####################################
+##########################........docker volume...........#####################################
+
+# volume is simply a directory inside our container.
+# first, we have to declare this directory as a volume and then share volume.
+
+# even if we stop container, still we can access volume.
+# volume will be created in one container.
+# we can declare a directory as a volume only while creating container.
+# we can't create volume from existing container.
+# we can share one volume across any number of containers.
+# volume will not be included when we update an image.
+# we can mapped volume in two ways- 
+                 : container<-----> container
+                 : host     <-----> container
+
+
+
+# Benifits of volume:
+
+# decoupling container from storage //it means no direct relation bet'n container and volume
+# share volume among different container
+# attach volume to container
+# on delete container volume doesn't delete
+
+###################################################################
+# method-1
+#############........create volume from dockerfile........#########
+
+# container to container volume share 
+
+## steps are--
+   
+# first we create Dockerfile 
+
+#     vi Dockerfile
+
+#      FROM    ubuntu
+       VOLUME  ["/myvolume1"]
+
+#   
+
+# save & exit the vi editior
+
+# now create image from this dockerfile
+
+$ docker build -t myimage .   // dot is pwd
+
+# now create container from this image & run
+$ docker run -it --name container1 myimage /bin/bash
+
+# now do ls it will show myvolume1
+$ ls
+
+$ cd myvolume1/
+
+# now under myvolume1 create some files & dir.
+
+$ touch file1 file2 file3 file4 
+$ mkdir dp1 dp2
+
+$ ls // it will show all files here in myvolume1
+
+# hint1- these files are showning on container2
+
+
+# NOW SHARE VOLUME WITH ANOTHER CONTAINER-
+# container to container
+# create container2 and share volume
+
+$ docker run -it --name container2 --privileged=true --volumes-from container1 ubuntu /bin/bash
+
+# now after creating container2, myvolume1 is visible in container2 and all files as well 
+
+# we are under mycontainer2
+# do ls ,it will show myvolume1 
+
+$ ls
+$ cd myvolume1/
+$ ls
+
+# it wil show file1 file2 file3 fil4 dp1 dp2 
+
+
+# ALSO WE CAN CREATE SOME FILES HERE IN container2 and then check on container2
+
+$ touch xyz1 abc11 mno11 
+$ mkdir dpc1 dpc2
+$ exit 
+
+$ docker start container1
+$ docker attach container1
+
+$ ls
+$ cd myvolume1/
+$ ls
+
+# it will show all file whicreated under container2
+
+-----------------------------------------------------------------------------
+
+# create volume by using command
+# create volume by using command
+-------------------------------------------------------------------------------
+$ docker run -it --name container3 -v /myvolume2 ubuntu /bin/bash
+
+$ ls
+
+$ cd myvolume2/
+
+# now we under myvolume2 ,here create some files
+
+$ touch city1 city2 cit3
+$ ls
+$ exit
+
+# now create another container as container4 
+# and share volume from container3
+
+$ docker run -it --name container4 --privileged=true --volumes-from container3 ubuntu /bin/bash
+
+# now we under container4
+
+$ ls
+$ cd myvolume2
+$ ls
+
+# o/p-->> city1 city2 city3 city4
+
+# ALSO WE CAN CREATE SOME FILE HERE AND CHECK ON CONTAINER3
+
+# SO CREATE SOME FILES HERE
+
+$ touch country1 country2 country3 country4
+$ ls
+$ exit
+
+$ docker start container3
+$ docker attach container3
+
+# now we are under container3
+
+$ ls
+$ cd myvolume2
+$ ls
+
+# it will show all old and new files 
+
+$ exit 
+
+-----------------------------------------------------------
+
+########.......VOLUME:HOST TO  CONTAINER.........##########
+########.......VOLUME:HOST TO  CONTAINER.........##########
+  
+  
+  
+  INCOMPLETE // CONCEPT NOT CLEAR---->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  
+  
+# first varify the directory as below: /home/dp -->> host
+# root@dp-Latitude-3520:/home/dp# 
+# we can access all file of /home/dp by our hostvolume
+# because it is mapped with host by : as below
+
+# here we create our volume
+# container name= hostcontainer1
+# volume name= myhostvolume
+
+$ docker run -it --name hostcontainer11 -v /home/dp:/myhostvolume --privileged=true ubuntu /bin/bash
+
+# now we are under container
+
+# ls
+# here myhostvolume showing
+
+$ cd hostvolume/
+$ ls
+# it will show all host file which are present in :/home/dp
+# because /home/dp mapped with :/myhostvolume
+
+$ exit 
+
+# again we come back in host path as: 
+# root@dp-Latitude-3520:/home/dp#
+
+$ docker start container11 
+$ docker attach container11
+
+$ ls
+$ cd myhostvolume
+
+# we can create some files here and check on host path :/home/dp
+
+$ touch file01 file022 file033
+$ mkdir mycity1 mycity2 mycity3
+$ exit
+
+# we are come back in host path now as below: /home/dp
+# root@dp-Latitude-3520:/home/dp# 
+
+$ ls 
+
+# it will show file011 file022 file033
+# and mycity1 mycity2 mycity3  and other old files as well
+
+------------------------------------------------------
+
+
+# some important commands:
+
+#
+$ docker volume ls
+
+
+#
+$ docker volume create <volume name>
+
+#
+$ docker volume rm <volume name >
+
+# it removed all unused volume
+$ docker volume prune
+
+# show all details about volume
+$ docker volume inspect <volume name>
+
+# show all details about container
+$ docker container inspect <container name>
+
+# delete all images forcefully
+$ docker image prune --all --force
+
+--------------------------------------------------------------
+
+##############.......Docker port mapping and docker expose expose..........#######################
+##############.......Docker port mapping and docker expose expose..........#######################
+
+
+# port mapping //create and run container
+# access the container worldwide globally
+# here used -td => terminal/daemon //means only create & run container ,not go inside the container
+
+$ docker run -td --name techserver -p 80:80 ubuntu /bin/bash
+$ docker ps
+
+-------------------------------------------------------
+# o/p-->>
+root@dp-Latitude-3520:/home/dp# docker ps
+CONTAINER ID   IMAGE     COMMAND       CREATED              STATUS              PORTS                               NAMES
+19bd6127028c   ubuntu    "/bin/bash"   About a minute ago   Up About a minute   0.0.0.0:80->80/tcp, :::80->80/tcp   techserver
+--------------------------------------------------
+$ docker port techserver
+
+ 
+-------------------------------------------------------
+# o/p-->>
+root@dp-Latitude-3520:/home/dp# docker port techserver
+80/tcp -> 0.0.0.0:80
+80/tcp -> :::80
+---------------------------------------------------
+
+# go inside the container
+$ docker exec -it techserver /bin/bash
+$ apt-get update
+$ apt-get install apache2 -y
+$ cd /var/www/html
+$ echo "hello welcome to devops industry" >index.html
+$ service apache2 start
+$ exit
+
+#find out ip adderess of your OS by using command: ifconfig
+# and paste on chrome browser with :80 or without. both works
+# it will show: hello welcome to devops industry
+
+#
+$ docker run -td --name myjenkins -p 8080:8080 jenkins/jenkins
+
+# now allow port 8080 in OS/linux
+$ sudo ufw allow 8080/tcp
+$ sudo ufw deny 8080/tcp // after lab use this command
+
+
+# and copy/paste ip address of your system folloed by 8080 in browser then jenkins open
+
+$ 172.17.0.1:8080
+
+# jenkins opened
+
+#############################################################
+
+
+
+# docker exec and docker attach both commands used for go inside the container
+
+# but docker exec creates a new process (pid)in the container environment while docker attach just connect the standard input/output of the the main process inside the container
+
+-------------------------------------
+
+difference bet'n expose and publish
+
+# basically we have three options:
+# 1: neither specify expose nor -p
+# 2: only specify expose
+# 3: specify expose and -p
+
+# note-1: if we specify neither expose nor -p , the service in the container will only be accessible from inside the container. no can access this container from outside.
+
+# note2: if we expose a port,the service in the container is not accessible from outside docker but from inside other docker container accessible. so this is good for inter-container communication.
+
+
+# if we expose and -p a port, the service in the container is accessible from anywhere, even outside the docker as well
+
+# if we do -p but do not expose , docker does an implicit expose .this is because,if a port is open to the public, it is automatically also open to the other docker container.
+hence 'p' includes expose.
+
+
+###########################################################################################
+###########################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 
 
 
